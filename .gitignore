@@ -1,1 +1,22 @@
-.venv
+# Abaikan environment virtual Python
+.venv/
+venv/
+
+# Abaikan semua data hasil pengecekan
+data/
+
+# Abaikan file sistem dan cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Abaikan file log dan hasil pengecekan tambahan
+*.log
+*.csv
+*.txt
+
+# Abaikan file editor (opsional)
+.vscode/
+.idea/
+*.sublime-workspace
