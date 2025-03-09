@@ -2,8 +2,9 @@
 .venv/
 venv/
 
-# Abaikan semua data hasil pengecekan
+# Abaikan semua data hasil pengecekan dan model
 data/
+bert_cola_model/
 
 # Abaikan file sistem dan cache
 __pycache__/
