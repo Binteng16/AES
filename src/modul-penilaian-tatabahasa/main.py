@@ -35,7 +35,7 @@ except Exception as e:
     print(f"Error saat membaca CSV: {e}")
     exit()
 
-# === 3. Ekstraksi Kalimat dari Esai (Menggunakan Spacy) ===
+# === 3. Ekstraksi Kalimat dan Klausa dari Esai ===
 nlp = spacy.load("en_core_web_sm")
 
 def extract_sentences(text):
@@ -43,9 +43,23 @@ def extract_sentences(text):
     doc = nlp(text)
     return [sent.text.strip() for sent in doc.sents]
 
+def extract_clauses(sentence):
+    """ Memisahkan kalimat menjadi klausa berdasarkan konjungsi dan tanda baca. """
+    doc = nlp(sentence)
+    clauses = []
+    clause = []
+    for token in doc:
+        clause.append(token.text)
+        if token.dep_ in ("cc", "mark", "punct") and token.text in ",.;":
+            clauses.append(" ".join(clause).strip())
+            clause = []
+    if clause:
+        clauses.append(" ".join(clause).strip())
+    return clauses
+
 # === 4. Prediksi Tata Bahasa ===
 def predict_grammar(sentences):
-    """ Memprediksi kesalahan tata bahasa pada setiap kalimat. """
+    """ Memprediksi kesalahan tata bahasa pada setiap kalimat atau klausa. """
     encodings = tokenizer(sentences, padding=True, truncation=True, max_length=128, return_tensors="pt")
     encodings = {key: val.to(device) for key, val in encodings.items()}
 
@@ -75,21 +89,47 @@ with open(log_file_txt, "w", encoding="utf-8") as log_txt:
     for idx, essay in enumerate(essays):
         print(f"\nMengecek tata bahasa pada esai {idx+1}...\n")
         sentences = extract_sentences(essay)
-        results = predict_grammar(sentences)
+        sentence_results = predict_grammar(sentences)
 
-        num_errors = sum(results)
+        num_errors = sum(sentence_results)
         total_sentences = len(sentences)
+        total_clauses = 0
+        correct_clauses = 0
+        incorrect_clauses = 0
 
         print(f"\nJumlah kesalahan tata bahasa: {num_errors} dari {total_sentences} kalimat\n")
         log_txt.write(f"\nEsai {idx+1} - Total Kalimat: {total_sentences}, Kesalahan: {num_errors}\n")
 
-        for i, (sent, res) in enumerate(zip(sentences, results)):
-            status = "Benar" if res == 0 else "Salah"
+        for i, (sent, sent_res) in enumerate(zip(sentences, sentence_results)):
+            status = "Benar" if sent_res == 0 else "Salah"
             print(f"{i+1}. {sent} - {status}")
             log_txt.write(f"{i+1}. {sent} - {status}\n")
 
+            # Pengecekan Klausa
+            clauses = extract_clauses(sent)
+            clause_results = predict_grammar(clauses)
+            total_clauses += len(clauses)
+            correct_clauses += clause_results.count(0)
+            incorrect_clauses += clause_results.count(1)
+
+            for j, (clause, clause_res) in enumerate(zip(clauses, clause_results)):
+                clause_status = "Benar" if clause_res == 0 else "Salah"
+                print(f"   > Klausa {j+1}: {clause} - {clause_status}")
+                log_txt.write(f"   > Klausa {j+1}: {clause} - {clause_status}\n")
+
+        print(f"Total Klausa: {total_clauses}, Benar: {correct_clauses}, Salah: {incorrect_clauses}\n")
+        log_txt.write(f"Total Klausa: {total_clauses}, Benar: {correct_clauses}, Salah: {incorrect_clauses}\n")
+
         # Simpan hasil ke daftar untuk CSV
-        results_list.append({"timestamp": timestamp, "essay": essay, "errors": num_errors, "total_sentences": total_sentences})
+        results_list.append({
+            "timestamp": timestamp,
+            "essay": essay,
+            "errors": num_errors,
+            "total_sentences": total_sentences,
+            "total_clauses": total_clauses,
+            "correct_clauses": correct_clauses,
+            "incorrect_clauses": incorrect_clauses
+        })
 
 # Simpan log ke CSV
 results_df = pd.DataFrame(results_list)
