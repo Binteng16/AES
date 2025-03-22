@@ -41,6 +41,6 @@ pre_processing_data = ['essay_id', 'essay_set', 'essay', 'skor_struktur_normaliz
 final_pre_processing_data = filtered_dataset[pre_processing_data]
 
 # Menyimpan data hasil pre-processing ke dalam file CSV
-final_pre_processing_data.to_csv('data/result/pre_processing_data2.csv', index=False)
+final_pre_processing_data.to_csv('data/result/pre_processing_data.csv', index=False)
 
 print("Proses pre-processing selesai, file telah disimpan sebagai 'pre_processing_data.csv'")
