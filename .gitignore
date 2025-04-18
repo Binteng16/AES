@@ -4,7 +4,7 @@ venv/
 
 # Abaikan semua data hasil pengecekan dan model
 data/
-bert_cola_model/
+models/
 
 # Abaikan file sistem dan cache
 __pycache__/

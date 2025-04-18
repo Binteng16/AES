@@ -2,7 +2,7 @@
 import pandas as pd
 
 # Membaca dataset dari file .tsv
-raw_data = pd.read_csv('training_set_rel3.tsv', sep='\t', encoding='ISO-8859-1')
+raw_data = pd.read_csv('E:/Bebeb/NEW/AES/data/asap-aes/training_set_rel3.tsv', sep='\t', encoding='ISO-8859-1')
 
 # Menyaring data untuk hanya mengambil essay_set dengan nilai 7
 filtered_dataset = raw_data[raw_data['essay_set'] == 7].copy()
@@ -22,17 +22,21 @@ skor_tata_bahasa = ['rater1_trait4', 'rater2_trait4']
 # Menghitung skor tata bahasa sebagai rata-rata dari 2 karakteristik yang ada
 filtered_dataset.loc[:, 'skor_tata_bahasa'] = filtered_dataset[skor_tata_bahasa].sum(axis=1) / len(skor_tata_bahasa)
 
-# Normalisasi skor Struktur dalam rentang 0-10
+# Normalisasi skor Struktur dalam rentang 0-10 (bulat)
 min_value_struktur = filtered_dataset['skor_struktur'].min()
 max_value_struktur = filtered_dataset['skor_struktur'].max()
-filtered_dataset['skor_struktur_normalized'] = 10 * (filtered_dataset['skor_struktur'] - min_value_struktur) / (max_value_struktur - min_value_struktur)
-filtered_dataset['skor_struktur_normalized'] = filtered_dataset['skor_struktur_normalized'].round(1)
+filtered_dataset['skor_struktur_normalized'] = (
+    10 * (filtered_dataset['skor_struktur'] - min_value_struktur) / 
+    (max_value_struktur - min_value_struktur)
+).round(0).astype(int)
 
-# Normalisasi skor Tata Bahasa dalam rentang 0-10
+# Normalisasi skor Tata Bahasa dalam rentang 0-10 (bulat)
 min_value_tata_bahasa = filtered_dataset['skor_tata_bahasa'].min()
 max_value_tata_bahasa = filtered_dataset['skor_tata_bahasa'].max()
-filtered_dataset['skor_tata_bahasa_normalized'] = 10 * (filtered_dataset['skor_tata_bahasa'] - min_value_tata_bahasa) / (max_value_tata_bahasa - min_value_tata_bahasa)
-filtered_dataset['skor_tata_bahasa_normalized'] = filtered_dataset['skor_tata_bahasa_normalized'].round(1)
+filtered_dataset['skor_tata_bahasa_normalized'] = (
+    10 * (filtered_dataset['skor_tata_bahasa'] - min_value_tata_bahasa) / 
+    (max_value_tata_bahasa - min_value_tata_bahasa)
+).round(0).astype(int)
 
 # Pilih kolom-kolom yang relevan untuk disimpan dalam dataset hasil pre-processing
 pre_processing_data = ['essay_id', 'essay_set', 'essay', 'skor_struktur_normalized', 'skor_tata_bahasa_normalized']

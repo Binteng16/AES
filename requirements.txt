@@ -9,3 +9,6 @@ transformers
 scikit-learn
 spacy
 datasets
+onnx
+textblob
+nltk
